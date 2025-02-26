@@ -1,0 +1,68 @@
+// app/login/page.js
+"use client";
+
+import { makeUserAuthentication } from "@/factories/makeUserAuthentication";
+import { parseJwt } from "@/factories/parseJWT";
+import { useRouter } from "next/navigation";
+import { User } from "oidc-client-ts";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { getUserInfo } from "@/factories/getUserInfo";
+
+export default function LoginPage() {
+  const auth = makeUserAuthentication();
+  const loginPrompt = useRef<undefined | string>(undefined);
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+
+  const login = async () => {
+    try {
+      return auth.signinRedirect(loginPrompt.current);
+    } catch (e: any) {
+      console.error(e);
+    }
+  };
+
+  async function checkCodeAndGetToken() {
+    try {
+      // validate code
+      await auth.verifyCodeAndGetAccessToken();
+
+      const user = (await auth.getUser()) as User;
+      const decoded_id_token = parseJwt(user.id_token as string);
+      console.log(decoded_id_token);
+      await getUserInfo(user.access_token as string);
+      return router.push("/");
+    } catch (e) {
+      console.error("Failed to authenticate!", e);
+    }
+  }
+
+  useEffect(() => {
+    // if (error) {
+    //   return () => undefined
+    // }
+    const code = searchParams?.get("code");
+    const errorDescription = searchParams?.get("error_description");
+    if (code) {
+      checkCodeAndGetToken();
+    } else if (errorDescription) {
+      setError(errorDescription);
+      loginPrompt.current = "login";
+    } else {
+      login();
+    }
+  }, []);
+
+  return (
+    <div className="container d-flex justify-content-center align-items-center vh-100">
+      <div className="card p-4" style={{ width: "400px" }}>
+        <h2 className="text-center mb-4">Login</h2>
+        <button type="button" onClick={login} className="btn btn-success w-100">
+          Login With Jans
+        </button>
+      </div>
+    </div>
+  );
+}

@@ -14,4 +14,5 @@ export const getUserInfo = async (accessToken: string) => {
   });
 
   console.log(response);
+  return response;
 };

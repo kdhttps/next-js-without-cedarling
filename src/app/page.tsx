@@ -8,6 +8,9 @@ export default function Home() {
       <Link href="/login" className="btn btn-success mt-3">
         Go to Login Page
       </Link>
+      <Link href="/dashboard" className="btn btn-success mt-3">
+        Go to Dashboard
+      </Link>
     </div>
   );
 }

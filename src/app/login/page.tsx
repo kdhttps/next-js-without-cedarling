@@ -8,6 +8,8 @@ import { User } from "oidc-client-ts";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getUserInfo } from "@/factories/getUserInfo";
+import { useAtom } from "jotai";
+import { accountAtom } from "@/factories/atoms";
 
 export default function LoginPage() {
   const auth = makeUserAuthentication();
@@ -15,6 +17,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const searchParams = useSearchParams();
+  const [account, setAccount] = useAtom(accountAtom);
 
   const login = async () => {
     try {
@@ -32,17 +35,26 @@ export default function LoginPage() {
       const user = (await auth.getUser()) as User;
       const decoded_id_token = parseJwt(user.id_token as string);
       console.log(decoded_id_token);
-      await getUserInfo(user.access_token as string);
-      return router.push("/");
+      const { data: userInfo } = await getUserInfo(user.access_token as string);
+      console.log(userInfo);
+      setAccount({
+        ...account,
+        isAuthenticate: true,
+        email: userInfo.email,
+        name: userInfo.name,
+        roles: userInfo.role,
+        userId: userInfo.sub,
+      });
+      return router.push("/dashboard");
     } catch (e) {
       console.error("Failed to authenticate!", e);
     }
   }
 
   useEffect(() => {
-    // if (error) {
-    //   return () => undefined
-    // }
+    if (error) {
+      return () => undefined;
+    }
     const code = searchParams?.get("code");
     const errorDescription = searchParams?.get("error_description");
     if (code) {
@@ -50,8 +62,6 @@ export default function LoginPage() {
     } else if (errorDescription) {
       setError(errorDescription);
       loginPrompt.current = "login";
-    } else {
-      login();
     }
   }, []);
 

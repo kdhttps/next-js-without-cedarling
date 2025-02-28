@@ -1,17 +1,38 @@
-// app/dashboard/layout.js
+"use client";
+import { accountAtom } from "@/factories/atoms";
+import { makeUserAuthentication } from "@/factories/makeUserAuthentication";
+import { useAtom } from "jotai";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const auth = makeUserAuthentication();
+  const [user] = useAtom(accountAtom);
+  const router = useRouter();
+
+  const logout = () => {
+    auth.signoutRedirect();
+  };
+
+  useEffect(() => {
+    if (!user.email) {
+      router.push("/login");
+    }
+  }, [user.email]);
+
   return (
     <div className="container-fluid">
       <div className="row">
         {/* Sidebar */}
         <div className="col-md-2 bg-light vh-100 p-3">
           <h2 className="mb-4">Next JS</h2>
+          <h4 className="mb-4">{user.email}</h4>
+          <h6 className="mb-4">{user.roles && user.roles.map((r) => r)}</h6>
           <ul className="nav flex-column">
             <li className="nav-item">
               <Link href="/dashboard/projects" className="nav-link">
@@ -24,9 +45,9 @@ export default function DashboardLayout({
               </Link>
             </li>
             <li className="nav-item">
-              <Link href="/dashboard/manage" className="nav-link">
+              <button onClick={logout} className="nav-link">
                 Logout
-              </Link>
+              </button>
             </li>
           </ul>
         </div>

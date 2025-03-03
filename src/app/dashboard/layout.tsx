@@ -40,8 +40,8 @@ export default function DashboardLayout({
               </Link>
             </li>
             <li className="nav-item">
-              <Link href="/dashboard/employees" className="nav-link">
-                Employees
+              <Link href="/dashboard/tasks" className="nav-link">
+                Tasks
               </Link>
             </li>
             <li className="nav-item">

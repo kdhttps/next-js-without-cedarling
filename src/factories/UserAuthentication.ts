@@ -30,6 +30,15 @@ export class UserAuthentication implements IUserAuthentication {
     }
   }
 
+  async getIdToken(): Promise<string | Error | undefined> {
+    try {
+      const user = await this.userManager.getUser();
+      return user?.id_token;
+    } catch (e) {
+      throw e;
+    }
+  }
+
   async signinRedirect(prompt: string | undefined): Promise<void> {
     if (prompt) {
       return this.userManager.signinRedirect({ prompt });

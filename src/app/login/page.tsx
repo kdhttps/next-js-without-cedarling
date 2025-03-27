@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { User } from "oidc-client-ts";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getUserInfo } from "@/factories/getUserInfo";
 import { useAtom } from "jotai";
 import { accountAtom } from "@/factories/atoms";
 
@@ -35,15 +34,13 @@ export default function LoginPage() {
       const user = (await auth.getUser()) as User;
       const decoded_id_token = parseJwt(user.id_token as string);
       console.log(decoded_id_token);
-      const { data: userInfo } = await getUserInfo(user.access_token as string);
-      console.log(userInfo);
       setAccount({
         ...account,
         isAuthenticate: true,
-        email: userInfo.email,
-        name: userInfo.name,
-        roles: userInfo.role,
-        userId: userInfo.sub,
+        email: decoded_id_token.email,
+        name: decoded_id_token.name,
+        roles: decoded_id_token.role,
+        userId: decoded_id_token.sub,
       });
       return router.push("/dashboard");
     } catch (e) {

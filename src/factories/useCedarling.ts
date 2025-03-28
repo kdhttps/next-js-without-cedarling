@@ -7,7 +7,7 @@ export function useCedarling() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const authorize = useCallback(
-    async (request: any): Promise<AuthorizeResult | boolean> => {
+    async (request: any): Promise<AuthorizeResult> => {
       setIsLoading(true);
       setError(null);
       try {

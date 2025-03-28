@@ -35,16 +35,6 @@ export default function DashboardLayout({
           <h6 className="mb-4">{user.roles && user.roles.map((r) => r)}</h6>
           <ul className="nav flex-column">
             <li className="nav-item">
-              <Link href="/dashboard/application" className="nav-link">
-                Application
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link href="/dashboard/projects" className="nav-link">
-                Projects
-              </Link>
-            </li>
-            <li className="nav-item">
               <Link href="/dashboard/tasks" className="nav-link">
                 Tasks
               </Link>

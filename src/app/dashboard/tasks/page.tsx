@@ -1,6 +1,9 @@
 "use client";
 
 import { accountAtom } from "@/factories/atoms";
+import { makeUserAuthentication } from "@/factories/makeUserAuthentication";
+import { useCedarling } from "@/factories/useCedarling";
+import { AuthorizeResult } from "@janssenproject/cedarling_wasm";
 import { useAtom } from "jotai";
 import { useState } from "react";
 import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
@@ -35,36 +38,79 @@ export default function TasksPage() {
     },
   ];
   const [tasks] = useState(initialTasks);
+  const { authorize, isLoading, error } = useCedarling();
+  const userAuthentication = makeUserAuthentication();
 
-  const handleAdd = () => {
-    if (
-      user.roles &&
-      (user.roles!.indexOf("admin") > -1 || user.roles!.indexOf("manager") > -1)
-    ) {
-      alert("Allow");
-    } else {
-      alert("Deny");
-      return;
+  const cedarlingRequest = async (action: string) => {
+    const idToken = await userAuthentication.getIdToken();
+    const accessToken = await userAuthentication.getAccessToken();
+
+    const request = {
+      tokens: {
+        access_token: accessToken,
+        id_token: idToken,
+      },
+      action: `Jans::Action::"${action}"`,
+      resource: {
+        type: "Jans::Task",
+        id: "App",
+        app_id: "App",
+        name: "App",
+        url: {
+          host: "jans.test",
+          path: "/",
+          protocol: "http",
+        },
+      },
+      context: {},
+    };
+
+    const result: AuthorizeResult = await authorize(request);
+    return result;
+  };
+
+  const handleAdd = async () => {
+    try {
+      const result = await cedarlingRequest("Add");
+      console.log(result);
+      if (result.decision) {
+        alert("Successfully added!");
+      } else {
+        alert("You are not allowed to add new Task!");
+      }
+    } catch (e) {
+      alert("You are not allowed to add new Task!");
+      console.log(e);
     }
   };
 
-  const handleUpdate = (id: number) => {
-    if (
-      user.roles &&
-      (user.roles!.indexOf("admin") > -1 || user.roles!.indexOf("manager") > -1)
-    ) {
-      alert("Allow");
-    } else {
-      alert("Deny");
-      return;
+  const handleUpdate = async (id: number) => {
+    try {
+      const result = await cedarlingRequest("Update");
+      console.log(result);
+      if (result.decision) {
+        alert("Successfully updated!");
+      } else {
+        alert("You are not allowed to update task!");
+      }
+    } catch (e) {
+      alert("You are not allowed to update task!");
+      console.log(e);
     }
   };
 
-  const handleDelete = (id: number) => {
-    if (user.roles && user.roles.indexOf("admin") > -1) {
-      alert("Allow");
-    } else {
-      alert("Deny");
+  const handleDelete = async (id: number) => {
+    try {
+      const result = await cedarlingRequest("Delete");
+      console.log(result);
+      if (result.decision) {
+        alert("Successfully deleted!");
+      } else {
+        alert("You are not allowed to delete task!");
+      }
+    } catch (e) {
+      alert("You are not allowed to delete task!");
+      console.log(e);
     }
   };
 
